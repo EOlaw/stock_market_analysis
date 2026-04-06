@@ -13,6 +13,7 @@ import seaborn as sns
 import yfinance as yf
 import warnings
 import datetime
+import time
 
 warnings.filterwarnings("ignore")
 
@@ -34,19 +35,45 @@ STOCKS = {
 sns.set_theme(style="darkgrid", palette="muted")
 plt.rcParams.update({"figure.figsize": (14, 6), "font.size": 11})
 
-# ── 1. Data Download ───────────────────────────────────────────────────────────
-print(f"Downloading data: {START_DATE} → {END_DATE}\n")
+# ── 1. Data Download (batch — one request, avoids rate limits) ────────────────
+tickers_list = list(STOCKS.keys())
+MAX_RETRIES  = 3
+RETRY_DELAY  = 8
+
+print(f"Downloading {len(STOCKS)} stocks in one batch: {START_DATE} → {END_DATE}\n")
+
+raw = pd.DataFrame()
+for attempt in range(1, MAX_RETRIES + 1):
+    try:
+        raw = yf.download(tickers_list, start=START_DATE, end=END_DATE,
+                          progress=False, auto_adjust=True, group_by="ticker")
+        if not raw.empty:
+            break
+        print(f"  Attempt {attempt}: empty response, retrying in {RETRY_DELAY}s...")
+    except Exception as e:
+        print(f"  Attempt {attempt} failed: {e}")
+    if attempt < MAX_RETRIES:
+        time.sleep(RETRY_DELAY * attempt)
+
+if raw.empty:
+    raise RuntimeError("All download attempts failed. Wait a minute and retry.")
+
 stock_data: dict[str, pd.DataFrame] = {}
 for ticker, name in STOCKS.items():
-    df = yf.download(ticker, start=START_DATE, end=END_DATE,
-                     progress=False, auto_adjust=True)
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = df.columns.get_level_values(0)
-    if not df.empty:
-        stock_data[ticker] = df
-        print(f"  {ticker:5s}  {name:15s}  {len(df)} trading days")
+    try:
+        df = raw[ticker].copy().dropna(how="all")
+        if not df.empty:
+            stock_data[ticker] = df
+            print(f"  {ticker:5s}  {name:15s}  {len(df)} trading days")
+        else:
+            print(f"  {ticker:5s}  no data in response")
+    except KeyError:
+        print(f"  {ticker:5s}  missing from batch result")
 
-close = pd.DataFrame({t: stock_data[t]["Close"] for t in stock_data})
+if not stock_data:
+    raise RuntimeError("No data loaded — Yahoo Finance may be rate-limiting. Try again in a few minutes.")
+
+close = pd.DataFrame({t: stock_data[t]["Close"].squeeze() for t in stock_data})
 print(f"\nLoaded {len(stock_data)} stocks — {close.index[0].date()} to {close.index[-1].date()}")
 
 # ── 2. Technical Indicators ────────────────────────────────────────────────────
