@@ -1,278 +1,159 @@
 # Advanced Stock Market Analysis
 
-A comprehensive, end-to-end stock market analysis pipeline covering **Tesla and the EV sector from January 2024 to the present**. It fetches live data, computes professional-grade technical indicators, measures risk, runs a machine learning price-direction model, and backtests a trading strategy — all in a self-contained Jupyter notebook and Python script.
+A comprehensive, end-to-end stock market analysis pipeline covering **Tesla and the EV sector from January 2024 to the present**. It fetches live data, computes professional-grade technical indicators, measures risk, runs a machine learning price-direction model, and backtests a trading strategy — all inside a self-contained Jupyter notebook and Python script.
+
+---
+
+## Dashboard
+
+> Generated automatically every time you run the project. The image below is the live output from the last execution (Jan 2024 → Apr 2026, 565 trading days).
+
+![Advanced Stock Market Analysis Dashboard](analysis_dashboard.png)
+
+---
+
+## Reading the Dashboard
+
+The dashboard is a single 6-panel figure. Here is exactly what each panel shows and what the data tells us.
+
+---
+
+### Panel 1 — Normalised Price Performance (top, full width)
+
+Every stock is rebased to **100 on January 1 2024** so that stocks at very different price levels ($655 SPY vs $6 NIO) can be compared on the same axis. A reading of 145 means +45% since the start date; a reading of 25 means −75%.
+
+**What the chart shows:**
+
+- **GM (General Motors)** is the clear winner of this cohort, climbing to roughly **200+ (over +100%)** — doubling in value in two years. The steady, diagonal rise shows it was a consistent uptrend rather than a spike.
+- **TSLA** shows the most dramatic story in the chart: it traded sideways through most of 2024, then exploded upward in **late 2024** (the post-election rally), briefly hitting a line near 250+ (up ~150%). It then retraced sharply and settled around **145 (~+45%)** by April 2026.
+- **SPY** (S&P 500 benchmark) delivered a smooth, consistent climb to roughly **142 (+42%)** — strong market-wide returns with almost no volatility visible at this scale.
+- **Ford (F)** tracked roughly flat, ending near **110 (+10%)** — it participated in the market but barely.
+- **NIO** and **RIVN** both spent the entire two-year period below the 100 baseline (losing money from the start), with NIO around **75 (−25%)** and RIVN around **73 (−27%)**.
+- **LCID (Lucid Group)** is the worst performer by a wide margin, collapsing to around **24 (−76%)** — losing three-quarters of its value over the period.
+
+> **Key takeaway:** The legacy OEM (GM) crushed the EV pure-plays over this period. The EV start-ups (RIVN, LCID, NIO) all destroyed capital while the established carmakers and the broad market delivered solid returns.
+
+---
+
+### Panel 2 — Annualised Return (middle left)
+
+A bar chart of each stock's annualised return — the compounded yearly rate of return if the observed performance continued for a full year.
+
+**What the chart shows:**
+
+- **GM** has by far the tallest green bar at roughly **+40% annualised** — the standout performer on a risk-adjusted and absolute basis.
+- **TSLA** and **SPY** both have solid positive bars around **+20–22%**, confirming they beat a typical long-run market average.
+- **F (Ford)** has a small positive bar, just above zero.
+- **LCID** is the only **red bar** — the only stock with a negative annualised return, reflecting its near-total collapse.
+- **NIO** and **RIVN** are barely above zero or slightly negative.
+
+> **Key takeaway:** Only 3 of the 7 stocks (GM, TSLA, SPY) meaningfully beat a risk-free return over this period. The EV start-ups failed to deliver.
+
+---
+
+### Panel 3 — Annualised Volatility (middle right)
+
+A bar chart of each stock's annualised volatility — how much the daily price swings, scaled to a yearly number. Higher volatility means wilder, less predictable price moves.
+
+**What the chart shows:**
+
+- **NIO** has the tallest bar at roughly **70%+ annualised volatility** — extreme day-to-day swings driven by Chinese regulatory risk, currency exposure, and thin US liquidity.
+- **TSLA** and **RIVN** are also high, both around **55–65%** — roughly 3–4× the volatility of the broad market.
+- **LCID** is surprisingly moderate given its collapse, around **55%**.
+- **GM** and **F** are the calmest single stocks at roughly **30–35%** — they move but not wildly.
+- **SPY** has the lowest bar at roughly **17%** — the diversification of 500 stocks dampens individual swings significantly.
+
+> **Key takeaway:** NIO, TSLA, and RIVN carry far more risk per dollar invested than SPY. GM delivered higher returns than TSLA (per panel 2) at lower volatility — making it the most efficient stock in this group over the period.
+
+---
+
+### Panel 4 — TSLA Price + Moving Averages + Bollinger Bands (lower full width)
+
+A detailed technical chart of TSLA's close price overlaid with four trend indicators and a volatility envelope.
+
+**Lines and bands:**
+
+| Element | Colour | What it means |
+|---------|--------|---------------|
+| Close price | Blue | Daily closing price |
+| SMA 20 | Orange | 20-day average — short-term trend |
+| SMA 50 | Green | 50-day average — medium-term trend |
+| SMA 200 | Red | 200-day average — the long-run bull/bear line |
+| Bollinger Bands | Purple shaded | ±2 standard deviations around SMA 20 |
+
+**What the chart shows:**
+
+- Through **H1 2024** TSLA consolidated sideways in a tight range ($150–$250), with the Bollinger Bands narrow and the SMA 20 and SMA 50 tangled together — a coiling pattern.
+- In **late October / November 2024** TSLA broke violently upward, briefly tagging **~$480**. The Bollinger Bands exploded wide, and the price ran far above the upper band — an extreme momentum expansion. At this point all three MAs were stacked bullishly (price > SMA 20 > SMA 50 > SMA 200).
+- The **SMA 200 (red line)** shows a long, gradual upward slope from mid-2024 onward — confirming the long-term trend turned bullish even after the post-spike pullback.
+- By early 2026 TSLA settled back inside the Bollinger Bands around **$360**, with the SMA 20 (orange) beginning to cross back below the SMA 50 (green) — an early warning of a possible medium-term softening.
+
+> **Key takeaway:** The November 2024 spike was a genuine momentum event, not a slow grind. Price is now mean-reverting back toward the long-term averages, which are still trending upward.
+
+---
+
+### Panel 5 — Return Correlation Matrix (bottom left)
+
+A heatmap showing the pairwise return correlation between all 7 stocks. **Green = positive correlation (they move together); Red = negative correlation (they move opposite).**
+
+**What the chart shows:**
+
+- **GM and F (Ford)** have the highest correlation in the matrix (around **0.55–0.65**) — both are legacy US automakers driven by the same macro factors (interest rates, consumer spending, auto sales data).
+- **TSLA and RIVN** show a moderate positive correlation (~**0.40–0.50**) — they share EV sector sentiment but diverge on fundamentals.
+- **NIO** has the lowest correlations with US stocks — closer to **0.20–0.30** — because its price is also driven by Chinese economic data, yuan moves, and Beijing policy, which are largely independent of US factors.
+- **SPY** has moderate positive correlations with everything (**0.30–0.50**) — as a broad index it captures the common macro tide that lifts or sinks all boats.
+- There are **no negative correlations** in this matrix — every stock in this group tends to go down together during broad market sell-offs, meaning owning multiple names provides limited crisis protection.
+
+> **Key takeaway:** This basket offers less diversification than it appears. During risk-off events, all seven names decline together. Only NIO provides mild isolation from US-specific events.
+
+---
+
+### Panel 6 — TSLA Daily Returns Distribution (bottom right)
+
+A histogram of every daily close-to-close return TSLA produced over the 565-day period, overlaid with a fitted normal distribution curve and a VaR marker.
+
+**Elements:**
+
+| Element | What it shows |
+|---------|--------------|
+| Blue bars | Empirical daily returns |
+| Red curve | What a normal distribution with the same mean and σ would look like |
+| Orange dashed line | VaR 95% — the loss level exceeded only 5% of trading days |
+
+**What the chart shows:**
+
+- The bulk of TSLA's daily returns cluster tightly between **−3% and +3%**, with the peak near 0 — most days are quiet.
+- The **orange VaR 95% line** sits at roughly **−3.5%**, meaning on 1 in every 20 trading days, TSLA fell more than 3.5% in a single session.
+- The blue bars extend noticeably further into the tails than the red normal curve — especially on the right side, where the +10% and +12% days from the November 2024 spike create a visible right-tail excess. This is **positive skew with fat tails** (leptokurtosis).
+- The normal curve **overestimates** the frequency of moderate losses and **underestimates** the frequency of extreme moves in both directions — a critical consideration for any options pricing or VaR model that assumes normality.
+
+> **Key takeaway:** TSLA has fat tails. Standard risk models based on the normal distribution will underestimate the true probability of extreme daily moves. Position sizing and stop-losses need to account for this.
 
 ---
 
 ## What This Project Does
 
-Most stock market tutorials show a single price chart and stop there. This project goes further:
-
-1. **Pulls live, adjusted data** for 7 tickers every time you run it — no stale CSVs.
-2. **Computes 20+ technical indicators** — the same ones used by professional traders.
-3. **Measures real risk** using VaR, CVaR, Sharpe, Calmar, beta, and max drawdown.
-4. **Compares stocks side-by-side** on a normalised performance and risk-return basis.
-5. **Trains a machine learning model** (Random Forest) with walk-forward cross-validation to predict next-day return direction.
-6. **Backtests a strategy** (MA crossover) and compares it against buy-and-hold with a drawdown chart.
-
----
-
-## Stocks Analysed
-
-| Ticker | Company | Why Included |
-|--------|---------|-------------|
-| **TSLA** | Tesla Inc. | Primary deep-dive — EV market leader |
-| **RIVN** | Rivian Automotive | Direct EV truck/SUV competitor |
-| **NIO** | NIO Inc. | Chinese EV market leader |
-| **LCID** | Lucid Group | Luxury EV competitor |
-| **GM** | General Motors | Legacy OEM transitioning to EV |
-| **F** | Ford Motor | Legacy OEM with EV line (F-150 Lightning) |
-| **SPY** | S&P 500 ETF | Market benchmark for beta and correlation |
-
----
-
-## Section-by-Section Breakdown
-
-### 1. Data Acquisition
-
-Data is downloaded live using `yfinance` with `auto_adjust=True`, which folds stock splits and dividends into the price so comparisons are always clean.
-
-**What you see at this stage:**
-- A printed table showing each ticker, how many trading days were downloaded, and the latest closing price.
-- A YTD return bar for each stock — instantly shows which EV names led and lagged the market since January 2024.
-
----
-
-### 2. Exploratory Data Analysis
-
-Two chart panels:
-
-**Panel A — Log-scale price chart (all 7 stocks)**
-Because TSLA trades near $200 while NIO trades near $5, a linear axis makes the small-cap EVs invisible. The log scale puts every stock on equal visual footing and shows percentage moves rather than dollar moves.
-
-**Panel B — Normalised performance (Base = 100)**
-Every stock is rebased to 100 on Jan 1 2024. A stock at 140 is up 40%; one at 60 is down 40%. This is the clearest way to compare returns across stocks at very different price levels.
-
-**TSLA detail chart:**
-A two-panel chart showing the close price with the high-low daily range shaded underneath, and a volume bar chart below it. Volume bars are coloured green on up-days and red on down-days so you can instantly see if volume confirms a move.
-
----
-
-### 3. Technical Indicators
-
-All indicators are computed from scratch using pandas — no external TA library needed.
-
-#### Price + Moving Averages + Bollinger Bands
-
-```
-  SMA 20   (orange)  — short-term trend
-  SMA 50   (green)   — medium-term trend
-  SMA 200  (red)     — long-term trend / bull/bear dividing line
-  EMA 12/26          — faster-reacting exponential averages (used in MACD)
-  Bollinger Bands    — shaded purple band: ±2 standard deviations around SMA 20
-```
-
-The **Bollinger Band Width** subplot below the price chart acts as a volatility gauge — when the bands are narrow the stock is coiling; when they explode wide it's in a trending or volatile phase.
-
-> **How to read it:** When price rides the upper Bollinger Band on rising volume, momentum is strong. A close back inside the bands after tagging the upper band often signals short-term exhaustion.
-
-#### RSI (14)
-
-The Relative Strength Index oscillates between 0 and 100.
-
-- **Above 70** → overbought zone (shaded red)
-- **Below 30** → oversold zone (shaded green)
-- **50 line** → separates bullish from bearish momentum regimes
-
-The chart fills the overbought and oversold regions so extremes jump out visually.
-
-#### MACD (12, 26, 9)
-
-Three components are plotted together:
-
-- **MACD line** (blue) — difference between EMA 12 and EMA 26
-- **Signal line** (orange) — 9-period EMA of MACD
-- **Histogram** — coloured bars (green when MACD > signal, red when below); shrinking bars signal a trend is losing steam before a crossover happens
-
-#### ATR, OBV, BB %B, Rolling Volatility
-
-A 2×2 subplot grid:
-
-| Chart | What it shows |
-|-------|--------------|
-| **ATR (14)** | Average True Range — raw dollar volatility per day. Useful for sizing stop-losses. |
-| **OBV** | On-Balance Volume — cumulative volume flow. Rising OBV on a rising price confirms buyers are in control. |
-| **Rolling Volatility (20 & 60-day)** | Annualised realised volatility. Shows when the stock is entering calm or stormy periods. |
-| **Bollinger %B** | Where price sits within the bands: 1.0 = at upper band, 0.0 = at lower band, 0.5 = at midline. |
-
----
-
-### 4. Returns Distribution & Rolling Volatility
-
-#### Daily Returns Histogram
-
-A histogram of all daily close-to-close returns overlaid with a fitted normal distribution curve. Two vertical lines mark **VaR 95%** (orange) and **VaR 99%** (red) — the worst return you'd expect to see on 5% and 1% of trading days respectively.
-
-> **Fat tails:** TSLA's return distribution has heavier tails than a normal distribution (positive excess kurtosis). This means large moves happen more often than a normal distribution would predict.
-
-#### Q-Q Plot
-
-Plots empirical return quantiles against theoretical normal quantiles. Points curving away from the diagonal confirm fat tails and negative skew — standard characteristics of equity returns.
-
-#### Cumulative Returns & Rolling Volatility
-
-Two side-by-side charts comparing all 7 stocks:
-- **Left:** Cumulative total return since Jan 2024 — shows the full journey, not just start and end.
-- **Right:** 30-day rolling annualised volatility — shows which periods were calm and which were turbulent for each name.
-
----
-
-### 5. Risk Metrics Table
-
-A summary table is printed and displayed for all stocks:
-
-| Metric | Description |
-|--------|-------------|
-| **Ann. Return** | Annualised average daily return × 252 |
-| **Ann. Volatility** | Annualised standard deviation of daily returns |
-| **Sharpe Ratio** | Return per unit of risk (higher = better) |
-| **Calmar Ratio** | Annualised return ÷ max drawdown (higher = better) |
-| **Max Drawdown** | Largest peak-to-trough decline in the period |
-| **VaR 95%** | Worst expected daily loss 1 day in 20 |
-| **CVaR 95%** | Average loss on the worst 5% of days (tail risk) |
-| **VaR 99%** | Worst expected daily loss 1 day in 100 |
-| **Beta (vs SPY)** | Sensitivity to S&P 500 moves (>1 = amplified moves) |
-
-#### Drawdown Chart
-
-Two stacked panels:
-- **Top:** All cumulative returns together — lets you see which stocks recovered fastest.
-- **Bottom:** Drawdown from peak for all stocks — shows how far each one fell before recovering, and which ones are still underwater.
-
----
-
-### 6. Multi-Stock Comparative Analysis
-
-#### Risk-Return Scatter Plot
-
-Each stock is plotted as a point with **annualised volatility on the X axis** and **annualised return on the Y axis**. Points are coloured by Sharpe ratio (red = poor, green = strong).
-
-> **What to look for:** Stocks in the upper-left are the most efficient (high return, low risk). Stocks in the lower-right are the worst (low return, high risk). The colour immediately shows which names are earning their risk.
-
-#### Correlation Heatmap
-
-A full return correlation matrix. Values close to **+1.0** mean two stocks move together; values near **0** mean they move independently.
-
-> **Key insight:** High correlation between EV names means owning multiple EV stocks provides less diversification than it appears.
-
-#### 60-Day Rolling Correlation to TSLA
-
-A time-series chart showing how each non-TSLA stock's correlation to Tesla has evolved over time. Correlations are not static — they spike during market stress and compress in calm periods.
-
----
-
-### 7. Machine Learning: Next-Day Return Direction
-
-#### Feature Engineering
-
-18 features are derived from price and indicator history:
-
-| Feature Group | Features |
-|--------------|---------|
-| Lagged returns | 1-day through 5-day lagged returns |
-| Momentum | 5, 10, 20-day price momentum |
-| Indicators | RSI, MACD, MACD Signal, BB%B, BB Width |
-| MA ratios | Price / SMA20, Price / SMA50 |
-| Volatility | 20-day rolling annualised volatility |
-| Volume | Volume ratio vs 20-day average |
-| ATR | ATR as a fraction of price |
-
-**Target:** Direction of the next day's close-to-close return (+1 up, −1 down).
-
-#### Walk-Forward Cross-Validation
-
-A `TimeSeriesSplit` with 5 folds is used — the model is **never trained on future data**. Each fold trains on the past and tests on the next unseen period, mimicking how a real trading system would be validated.
-
-#### Feature Importance Chart
-
-A horizontal bar chart shows which of the 18 features the Random Forest found most predictive. Typically momentum and RSI features rank highly, while volume features rank lower.
-
-#### Fold Accuracy Chart
-
-A bar chart of directional accuracy across all 5 folds with a 50% random-baseline reference line. Consistent accuracy above 50% confirms the model has learned a real pattern rather than over-fitting.
-
----
-
-### 8. Backtesting — MA 20/50 Crossover Strategy
-
-**Rules:**
-- **Golden Cross** — SMA 20 crosses above SMA 50 → BUY (go long)
-- **Death Cross** — SMA 20 crosses below SMA 50 → SELL (go flat)
-- Long-only, fully invested when in position, cash otherwise
-- No transaction costs or slippage modelled
-
-#### Three-Panel Backtest Chart
-
-```
-Panel 1 — Price chart with SMA 20 and SMA 50
-          ▲ green triangles = buy signals
-          ▼ red triangles   = sell signals
-          shaded green regions = periods when strategy is in position
-
-Panel 2 — Cumulative return: Strategy (green) vs Buy & Hold (blue)
-          Labels show the final total return for each
-
-Panel 3 — Strategy drawdown
-          Red shaded area shows how far the strategy fell from its peak
-          at any point in time
-```
-
-The comparison makes clear when the trend-following rules help (avoiding prolonged downtrends) and when they hurt (whipsawing in choppy sideways markets).
-
----
-
-### 9. Summary Dashboard
-
-A single 6-panel figure that combines the most important charts into one image, saved to **`analysis_dashboard.png`**:
-
-```
-┌─────────────────────────────────────────────────┐
-│   Normalised Performance — all 7 stocks         │  ← full-width
-├───────────────────────┬─────────────────────────┤
-│  Annualised Return    │  Annualised Volatility   │
-├───────────────────────┴─────────────────────────┤
-│   TSLA Price + SMA 20/50/200 + Bollinger Bands  │  ← full-width
-├───────────────────────┬─────────────────────────┤
-│  Correlation Matrix   │  Returns Distribution   │
-└───────────────────────┴─────────────────────────┘
-```
-
-This single image gives a complete picture of the market environment, relative performance, risk structure, and TSLA's current technical position — everything you need at a glance.
-
----
-
-## Generated Output
-
-| File | Generated by | Contents |
-|------|-------------|---------|
-| `analysis_dashboard.png` | `index.py` or notebook Section 9 | 6-panel summary chart |
+1. **Pulls live, adjusted data** for 7 tickers in a single batch request — no stale CSVs, no rate-limit errors.
+2. **Computes 20+ technical indicators** — SMA, EMA, Bollinger Bands, RSI, MACD, ATR, OBV, rolling volatility.
+3. **Measures real risk** — Sharpe, Calmar, VaR 95/99%, CVaR, max drawdown, beta vs SPY.
+4. **Compares stocks side-by-side** on normalised performance, risk-return efficiency, and correlation.
+5. **Trains a machine learning model** — Random Forest with 18 engineered features and 5-fold walk-forward CV.
+6. **Backtests a strategy** — SMA 20/50 crossover vs buy-and-hold, with drawdown analysis.
 
 ---
 
 ## Quick Start
 
 ```bash
-# 1. Install dependencies
+# Install dependencies
 pip install yfinance pandas numpy matplotlib seaborn scikit-learn scipy
 
-# 2a. Run the standalone script (produces analysis_dashboard.png)
+# Run the script (fetches live data, saves analysis_dashboard.png)
 python index.py
 
-# 2b. Or open the full interactive notebook
+# Or open the full interactive notebook
 jupyter notebook stock_market_analysis.ipynb
 ```
-
-Data is fetched live every run — no setup or CSV maintenance needed.
 
 ---
 
@@ -280,10 +161,10 @@ Data is fetched live every run — no setup or CSV maintenance needed.
 
 ```
 stock_market_analysis/
-├── index.py                      # Standalone script: full analysis + dashboard PNG
-├── stock_market_analysis.ipynb   # Interactive notebook: all 9 sections
+├── index.py                      # Standalone script — full analysis + dashboard PNG
+├── stock_market_analysis.ipynb   # Interactive notebook — all 9 analysis sections
 ├── Tesla_Stock.csv               # Archive: TSLA historical data 2010–2022
-├── analysis_dashboard.png        # Generated: summary dashboard (after first run)
+├── analysis_dashboard.png        # Generated dashboard (refreshed every run)
 └── README.md                     # This file
 ```
 
